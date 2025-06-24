@@ -485,4 +485,13 @@ input[type="text"] {
   justify-content: center;
   z-index: 100;
   image-rendering: pixelated;
+}
+
+/* Top-down player */
+#player {
+  background: #ff0;
+  border: 3px solid #222;
+  border-radius: 12px;
+  box-shadow: 0 0 8px #fff8;
+  z-index: 10;
 } 

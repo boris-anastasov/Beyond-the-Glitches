@@ -58,8 +58,7 @@ startBtn.onclick = () => {
           </div>
         `;
         showDialogQueue(dialogContainer, [
-          { text: '*You feel a strange force pulling you in...*', type: 'monologue' },
-          { text: '*You are now inside the TV, in a bizarre new world!*', type: 'monologue' }
+          { text: '*You are now inside the TV, in a unknown world!*', type: 'monologue' }
         ], null, textSpeed);
       });
       continueStoryAfterRemote(scene, dialogContainer);

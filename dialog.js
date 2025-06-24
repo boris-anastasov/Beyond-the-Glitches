@@ -52,11 +52,20 @@ export function showDialogQueue(dialogContainer, queue, onDone, textSpeed = 20) 
       finishTyping = addDialog(dialogContainer, d.text, d.type, true, null, textSpeed);
       dialogIndex++;
     } else {
+      window.removeEventListener('click', nextDialog);
       if (onDone) onDone();
     }
   }
   nextDialog();
-  dialogContainer.onclick = nextDialog;
+  function handleClick() {
+    if (finishTyping && finishTyping.isTyping) {
+      finishTyping();
+    } else {
+      nextDialog();
+    }
+  }
+  dialogContainer.onclick = handleClick;
+  window.addEventListener('click', handleClick);
 }
 
 export function askInput(dialogContainer, prompt, callback) {
