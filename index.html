@@ -14,10 +14,10 @@
       <button id="start-btn">Start</button>
       <button id="settings-btn">Settings</button>
     </div>
-    <div id="settings-modal" class="overlay hidden">
+    <div id="settings-modal" class="overlay hidden" style="display: flex; flex-direction: column; align-items: center;">
       <h2>Settings</h2>
-      <label>Brightness: <input type="range" id="brightness-slider" min="0.5" max="1.5" step="0.01" value="1"></label>
-      <button id="close-settings">Close</button>
+      <label style="margin-bottom: 1rem;">Text Speed: <input type="range" id="text-speed-slider" min="10" max="100" step="1" value="20"> <span id="text-speed-label">Fastest</span></label>
+      <button id="close-settings" style="margin-top: 1rem;">Close</button>
     </div>
     <div id="game-area" class="hidden">
       <div id="scene"></div>
