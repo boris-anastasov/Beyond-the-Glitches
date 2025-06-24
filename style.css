@@ -1,5 +1,8 @@
 body {
-  background: #222;
+  background-image: url('assets/BackgroundWebsite.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
   color: #fff;
   font-family: 'Press Start 2P', 'VT323', 'Courier New', Courier, monospace;
   margin: 0;
@@ -157,7 +160,7 @@ body {
 .dialog-bubble {
   background: #111;
   color: #fff;
-  border: 2px solid #fff;
+  border: none;
   border-radius: 0;
   padding: 1.1rem 1.5rem;
   margin: 0.5rem 0;
@@ -171,12 +174,12 @@ body {
 .dialog-bubble.monologue {
   font-style: italic;
   background: #222;
-  border-color: #aaa;
+  border: none;
 }
 .dialog-bubble.character {
   font-weight: bold;
   background: #222;
-  border-color: #4af;
+  border: none;
 }
 
 #remote-container {

@@ -5,6 +5,10 @@ let brightness = 1;
 let dialogQueue = [];
 let dialogIndex = 0;
 let awaitingInput = false;
+let isTyping = false;
+let finishTyping = null;
+let canSkipDialog = true;
+let ignoreNextDialogClick = false;
 
 // --- DOM Elements ---
 const titleScreen = document.getElementById('title-screen');
@@ -22,19 +26,53 @@ const remoteContainer = document.getElementById('remote-container');
 function show(el) { el.classList.remove('hidden'); }
 function hide(el) { el.classList.add('hidden'); }
 function clearDialog() { dialogContainer.innerHTML = ''; }
-function addDialog(text, type = 'monologue', showArrow = true) {
+function addDialog(text, type = 'monologue', showArrow = true, onDoneTyping) {
   clearDialog();
   const bubble = document.createElement('div');
   bubble.className = 'dialog-bubble ' + type;
-  bubble.innerText = text;
-  if (showArrow) {
-    const arrow = document.createElement('span');
-    arrow.innerHTML = ' ▼';
-    arrow.style.fontSize = '1.2em';
-    arrow.style.marginLeft = '0.5em';
-    bubble.appendChild(arrow);
-  }
   dialogContainer.appendChild(bubble);
+
+  let i = 0;
+  const speed = 20; // ms per character
+  isTyping = true;
+  canSkipDialog = false;
+  setTimeout(() => { canSkipDialog = true; }, 200); // 200ms delay before allowing skip
+  let typingTimeout = null;
+
+  finishTyping = function() {
+    if (!isTyping) return;
+    isTyping = false;
+    bubble.innerText = text;
+    if (showArrow) {
+      const arrow = document.createElement('span');
+      arrow.innerHTML = ' ▼';
+      arrow.style.fontSize = '1.2em';
+      arrow.style.marginLeft = '0.5em';
+      bubble.appendChild(arrow);
+    }
+    if (onDoneTyping) onDoneTyping();
+    if (typingTimeout) clearTimeout(typingTimeout);
+  };
+
+  function typeWriter() {
+    if (!isTyping) return;
+    if (i <= text.length) {
+      bubble.innerText = text.slice(0, i);
+      i++;
+      typingTimeout = setTimeout(typeWriter, speed);
+    } else {
+      isTyping = false;
+      if (showArrow) {
+        const arrow = document.createElement('span');
+        arrow.innerHTML = ' ▼';
+        arrow.style.fontSize = '1.2em';
+        arrow.style.marginLeft = '0.5em';
+        bubble.appendChild(arrow);
+      }
+      if (onDoneTyping) onDoneTyping();
+    }
+  }
+  typeWriter();
 }
 function askInput(prompt, callback) {
   clearDialog();
@@ -69,13 +107,17 @@ brightnessSlider.oninput = (e) => {
 function showDialogQueue(queue, onDone) {
   dialogQueue = queue;
   dialogIndex = 0;
-  // Remove previous listeners to avoid duplicates
   document.removeEventListener('click', window._dialogClickHandler);
   document.removeEventListener('keydown', window._dialogKeyHandler);
   function nextDialog() {
+    if (!canSkipDialog) return;
+    if (isTyping) {
+      if (finishTyping) finishTyping();
+      return;
+    }
     if (dialogIndex < dialogQueue.length) {
       const d = dialogQueue[dialogIndex];
-      addDialog(d.text, d.type);
+      addDialog(d.text, d.type, true);
       dialogIndex++;
     } else {
       document.removeEventListener('click', window._dialogClickHandler);
@@ -84,6 +126,10 @@ function showDialogQueue(queue, onDone) {
     }
   }
   window._dialogClickHandler = function(e) {
+    if (ignoreNextDialogClick) {
+      ignoreNextDialogClick = false;
+      return;
+    }
     if (!awaitingInput) nextDialog();
   };
   window._dialogKeyHandler = function(e) {
@@ -98,6 +144,7 @@ function showDialogQueue(queue, onDone) {
 startBtn.onclick = () => {
   hide(titleScreen);
   show(gameArea);
+  ignoreNextDialogClick = true;
   startIntro();
 };
 
@@ -108,51 +155,48 @@ function startIntro() {
       <img src="assets/scene1.png" alt="Reading under lamp" style="width:100%;height:100%;object-fit:cover;image-rendering:pixelated;">
     </div>
   `;
-  showDialogQueue([
-    { text: '*It was a quiet night. I was reading my favorite book...*', type: 'monologue' }
-  ], () => {
-    // Scene 2: Looking out the window (same image)
-    scene.innerHTML = `
-      <div class="pixel-scene">
-        <img src="assets/scene1.png" alt="Reading under lamp" style="width:100%;height:100%;object-fit:cover;image-rendering:pixelated;">
-      </div>
-    `;
+  {
     showDialogQueue([
-      { text: '*It has been four years since my sister died...*', type: 'monologue' },
-      { text: '*We were so close when were little, I started drifting away from her ten years before she passed, buried in work...*', type: 'monologue' },
-      { text: '*When I think back, she was always trying to connect with me, especially through our shared love of books.*', type: 'monologue' },
-      { text: '*Now, every time I think back, the regret feels heavier. I wish I had tried harder...*', type: 'monologue' },
+      { text: '*It was a quiet night. I decided to read my sister\'s favorite book...*', type: 'monologue' },
+      { text: '*It has been three years since my sister died...*', type: 'monologue' },
+      { text: '*We used to be inseparable as kids, but over time I drifted away—buried in work and excuses.*', type: 'monologue' },
+      { text: '*Looking back, she kept reaching out—especially through the books we both loved.*', type: 'monologue' },
+      { text: '*Now, every memory weighs heavier. I wish I had just made more time for her...*', type: 'monologue' },
     ], () => {
-      // Scene 3: Noises from upstairs (same image)
+      // Scene 2: Noises from upstairs (same image)
       scene.innerHTML = `<div class=\"pixel-scene\"><img src=\"assets/scene1.png\" alt=\"Reading under lamp\" style=\"width:100%;height:100%;object-fit:cover;image-rendering:pixelated;\"></div>`;
       showDialogQueue([
-        { text: '*What is your name?*', type: 'monologue' }
+        { text: '*A voice called for you from upstairs. What name did it speak?*', type: 'monologue' }
       ], () => {
         askInput('*Enter your name*', (name) => {
           playerName = name;
           showDialogQueue([
-            { text: 'You started hearing strange noises coming from upstairs...', type: 'monologue' },
-            { text: '*You put your book down and grab the nearest thing for defense.*', type: 'monologue' },
-            { text: `${playerName}: \"Better check what that is...\"`, type: 'character' }
+            { text: `${playerName}: \"Who said that?\"`, type: 'character' },
+            { text: '*You put your book down and decide to check to be sure.*', type: 'monologue' },
           ], goUpstairs);
         });
       });
     });
-  });
+  };
 }
 
 function goUpstairs() {
-  scene.innerHTML = '<div style="width:100%;height:100%;background:linear-gradient(to top,#222 60%,#444 100%);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">Upstairs Hallway</div>';
+  scene.innerHTML = `
+    <div class="pixel-scene">
+      <img src="assets/scene2.png" alt="Upstairs Hallway" style="width:100%;height:100%;object-fit:cover;image-rendering:pixelated;">
+    </div>
+  `;
   showDialogQueue([
-    { text: '*You slowly walk up the stairs, each step creaking under your feet...*', type: 'monologue' },
-    { text: '*You see an open door. Inside, a TV is showing static. A remote lies on the ground.*', type: 'monologue' },
-    { text: '*You can pick up the remote.*', type: 'monologue' }
+    { text: '*You decide to walk up the stairs to be sure, each step creaking beneath your feet...*', type: 'monologue' },
+    { text: '*There\'s a low buzzing sound coming from the open room at the end of the hallway.*', type: 'monologue' }
   ], showRemotePickup);
 }
 
 function showRemotePickup() {
   scene.innerHTML = `<div class=\"pixel-scene\"></div>`;
   showDialogQueue([
+    { text: '*You glance inside. A TV flickers in the middle of the room.*', type: 'monologue' },
+    { text: '*A remote lies on the ground, faintly illuminated by the screen.*', type: 'monologue' },
     { text: '*You can pick up the remote.*', type: 'monologue' }
   ], () => {
     // Placeholder for when user provides their own remote image
