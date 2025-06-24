@@ -1,4 +1,3 @@
-import { show, hide } from './utils.js';
 import { clearDialog } from './utils.js';
 
 export function addDialog(dialogContainer, text, type = 'monologue', showArrow = true, onDoneTyping, textSpeed = 20) {
