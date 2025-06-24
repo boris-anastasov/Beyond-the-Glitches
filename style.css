@@ -442,4 +442,47 @@ input[type="text"] {
   background: linear-gradient(180deg, #222 60%, #111 100%);
   transform: translateY(4px) scale(0.98);
   box-shadow: 0 1px 0 #222, 0 2px 4px #000a;
+}
+
+#floor-remote {
+  animation: remote-glow 1s infinite alternate;
+  box-shadow: 0 0 12px 4px #fff7, 0 0 0 2px #fff5;
+  border-radius: 8px;
+}
+
+@keyframes remote-glow {
+  0% {
+    box-shadow: 0 0 8px 2px #fff7, 0 0 0 2px #fff5;
+    filter: brightness(1.2);
+  }
+  100% {
+    box-shadow: 0 0 24px 8px #fff, 0 0 0 4px #fff9;
+    filter: brightness(1.5);
+  }
+}
+
+.glow-circle {
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff8 60%, #fff2 100%, transparent 100%);
+  box-shadow: 0 0 24px 12px #fff8, 0 0 0 4px #fff9;
+  animation: remote-glow 1s infinite alternate;
+  border: 2px solid #fff;
+}
+
+#remote-window {
+  position: fixed;
+  left: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 140px;
+  height: 260px;
+  background: #181818ee;
+  border: 6px solid #222;
+  border-radius: 0;
+  box-shadow: 0 6px 24px #000a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  image-rendering: pixelated;
 } 

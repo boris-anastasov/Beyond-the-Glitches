@@ -1,6 +1,10 @@
+import { show, hide, getSpeedLabel } from './utils.js';
+import { addDialog, showDialogQueue, askInput } from './dialog.js';
+import { startIntro, goUpstairs, showRemotePickup, continueStoryAfterRemote } from './scenes.js';
+
 document.addEventListener('DOMContentLoaded', function() {
 // --- Game State ---
-let playerName = '';
+let playerName = { value: '' };
 let remotePicked = false;
 let brightness = 1;
 let dialogQueue = [];
@@ -39,17 +43,6 @@ if (brightnessSlider) {
     brightness = e.target.value;
     gameArea.style.filter = `brightness(${brightness})`;
   };
-}
-
-function getSpeedLabel(val) {
-  val = Number(val);
-  if (val <= 15) return 'Fastest';
-  if (val <= 25) return 'Faster';
-  if (val <= 40) return 'Fast';
-  if (val <= 60) return 'Medium';
-  if (val <= 75) return 'Slow';
-  if (val <= 90) return 'Slower';
-  return 'Slowest';
 }
 
 if (textSpeedSlider && textSpeedLabel) {
@@ -103,78 +96,13 @@ startBtn.onclick = () => {
   hide(titleScreen);
   show(gameArea);
   ignoreNextDialogClick = true;
-  startIntro();
+  startIntro(scene, dialogContainer, playerName, () => goUpstairs(scene, dialogContainer, () => showRemotePickup(scene, dialogContainer, onPickup)));
 };
 
-function startIntro() {
-  // Scene 1: Book under lamp (user's image)
-  scene.innerHTML = `
-    <div class="pixel-scene">
-      <img src="assets/scene1.png" alt="Reading under lamp" style="width:100%;height:100%;object-fit:cover;image-rendering:pixelated;">
-    </div>
-  `;
-  {
-    showDialogQueue([
-      { text: '*It was a quiet night. I decided to read my sister\'s favorite book...*', type: 'monologue' },
-      { text: '*It has been three years since she died...*', type: 'monologue' },
-      { text: '*We used to be inseparable as kids, but over time I drifted away—buried in work and excuses.*', type: 'monologue' },
-      { text: '*Looking back, she kept reaching out—especially through the books we both loved.*', type: 'monologue' },
-      { text: '*Now, every memory weighs heavier. I wish I had just made more time for her...*', type: 'monologue' },
-    ], () => {
-      // Scene 2: Noises from upstairs (same image)
-      scene.innerHTML = `<div class=\"pixel-scene\"><img src=\"assets/scene1.png\" alt=\"Reading under lamp\" style=\"width:100%;height:100%;object-fit:cover;image-rendering:pixelated;\"></div>`;
-      showDialogQueue([
-        { text: '*A voice called for you from upstairs. What name did it speak?*', type: 'monologue' }
-      ], () => {
-        askInput('*Enter your name*', (name) => {
-          playerName = name;
-          showDialogQueue([
-            { text: `${playerName}: \"Who said that?\"`, type: 'character' },
-            { text: '*You put your book down and decide to check to be sure.*', type: 'monologue' },
-          ], goUpstairs);
-        });
-      });
-    });
-  };
-}
-
-function goUpstairs() {
-  scene.innerHTML = `
-    <div class="pixel-scene">
-      <img src="assets/scene2.png" alt="Upstairs Hallway" style="width:100%;height:100%;object-fit:cover;image-rendering:pixelated;">
-    </div>
-  `;
-  showDialogQueue([
-    { text: '*You decide to walk up the stairs to be sure, each step creaking beneath your feet...*', type: 'monologue' },
-    { text: '*There\'s a low buzzing sound coming from the open room at the end of the hallway.*', type: 'monologue' }
-  ], showRemotePickup);
-}
-
-function showRemotePickup() {
-  scene.innerHTML = `<div class=\"pixel-scene\"></div>`;
-  showDialogQueue([
-    { text: '*You glance inside. A TV flickers in the middle of the room.*', type: 'monologue' },
-    { text: '*A remote lies on the ground, faintly illuminated by the screen.*', type: 'monologue' },
-    { text: '*You can pick up the remote.*', type: 'monologue' }
-  ], () => {
-    // Placeholder for when user provides their own remote image
-    remotePicked = true;
-    showRemoteAtBottom();
-    continueStoryAfterRemote();
-  });
-}
-
-function showRemoteAtBottom() {
-  // Remove the remote from the UI for now
-  remoteContainer.innerHTML = '';
-  hide(remoteContainer);
-}
-
-function continueStoryAfterRemote() {
-  scene.innerHTML = `<div class=\"pixel-scene\"></div>`;
-  showDialogQueue([
-    { text: '*You now have the remote. What will you do next?*', type: 'monologue' }
-  ]);
+function onPickup() {
+  remotePicked = true;
+  // Тук добави логиката за показване на дистанционното и продължаване на историята
+  continueStoryAfterRemote(scene, dialogContainer);
 }
 
 // --- Initialize ---
